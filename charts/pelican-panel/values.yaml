@@ -85,26 +85,26 @@ pelican:
   appLocale: "en"
   # appKey will be generated if not set
   appKey: ""
-  
+
   # Admin user settings
   adminEmail: "admin@example.com"
   adminUsername: "admin"
   # adminPassword will be generated if not set
   adminPassword: ""
-  
+
   # Session configuration
   sessionDriver: "file"
   sessionLifetime: "120"
   sessionEncrypt: false
   sessionPath: "/"
   sessionDomain: ""
-  
+
   # Cache configuration
   cacheDriver: "file"
-  
+
   # Queue configuration
   queueConnection: "sync"
-  
+
   # Mail configuration
   mailDriver: "log"
   mailHost: ""
@@ -114,14 +114,14 @@ pelican:
   mailEncryption: "tls"
   mailFromAddress: "noreply@pelican.local"
   mailFromName: "Pelican Panel"
-  
+
   # Filesystem configuration
   filesystemDisk: "local"
-  
+
   # Hash configuration
   hashDriver: "bcrypt"
   hashBcryptRounds: 10
-  
+
   # Trusted proxies
   trustedProxies: "*"
 
@@ -132,14 +132,14 @@ persistence:
   accessMode: ReadWriteOnce
   size: 10Gi
   # existingClaim: ""
-  
+
   # Separate volumes for different data types
   data:
     enabled: true
     size: 10Gi
     mountPath: /pelican-data
     # existingClaim: ""
-  
+
   logs:
     enabled: true
     size: 5Gi
@@ -153,7 +153,7 @@ cnpg:
   cluster:
     instances: 1
     primaryUpdateStrategy: "unsupervised"
-    
+
     postgresql:
       parameters:
         max_connections: "200"
@@ -168,17 +168,17 @@ cnpg:
         work_mem: "4MB"
         min_wal_size: "1GB"
         max_wal_size: "2GB"
-    
+
     monitoring:
       enabled: false
-    
+
     superuserSecret:
       name: ""
-    
+
     storage:
       storageClass: ""
       size: 10Gi
-    
+
     resources: {}
       # limits:
       #   cpu: 1000m

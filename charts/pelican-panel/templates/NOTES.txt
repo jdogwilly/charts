@@ -24,7 +24,7 @@
 2. Get the admin credentials:
   Admin Email: {{ .Values.pelican.adminEmail }}
   Admin Username: {{ .Values.pelican.adminUsername }}
-  Admin Password: 
+  Admin Password:
     kubectl get secret --namespace {{ .Release.Namespace }} {{ include "pelican-panel.fullname" . }}-secret -o jsonpath="{.data.ADMIN_PASSWORD}" | base64 --decode
 
 3. Database Information:
@@ -33,7 +33,7 @@
   Database Host: {{ include "pelican-panel.fullname" . }}-cnpg-rw
   Database Name: pelican
   Database User: pelican
-  Database Password: 
+  Database Password:
     kubectl get secret --namespace {{ .Release.Namespace }} {{ include "pelican-panel.fullname" . }}-cnpg-app -o jsonpath="{.data.password}" | base64 --decode
 {{- else if .Values.externalDatabase.enabled }}
   Database Type: {{ .Values.externalDatabase.type }}
@@ -54,5 +54,5 @@
 
 NOTE: Pelican Panel is now deployed. You may need to run database migrations and perform initial setup.
       To access the container and run artisan commands:
-      
+
       kubectl exec -it --namespace {{ .Release.Namespace }} deployment/{{ include "pelican-panel.fullname" . }} -- /bin/bash

@@ -8,11 +8,11 @@ metadata:
 spec:
   instances: {{ .Values.cnpg.cluster.instances }}
   primaryUpdateStrategy: {{ .Values.cnpg.cluster.primaryUpdateStrategy }}
-  
+
   postgresql:
     parameters:
       {{- toYaml .Values.cnpg.cluster.postgresql.parameters | nindent 6 }}
-  
+
   bootstrap:
     initdb:
       database: pelican
@@ -23,23 +23,23 @@ spec:
         - |
           CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
           CREATE EXTENSION IF NOT EXISTS "pg_trgm";
-  
+
   {{- if .Values.cnpg.cluster.superuserSecret.name }}
   superuserSecret:
     name: {{ .Values.cnpg.cluster.superuserSecret.name }}
   {{- end }}
-  
+
   storage:
     size: {{ .Values.cnpg.cluster.storage.size }}
     {{- if .Values.cnpg.cluster.storage.storageClass }}
     storageClass: {{ .Values.cnpg.cluster.storage.storageClass }}
     {{- end }}
-  
+
   {{- if .Values.cnpg.cluster.resources }}
   resources:
     {{- toYaml .Values.cnpg.cluster.resources | nindent 4 }}
   {{- end }}
-  
+
   {{- if .Values.cnpg.cluster.monitoring.enabled }}
   monitoring:
     enabled: true

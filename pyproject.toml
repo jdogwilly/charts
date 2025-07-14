@@ -1,0 +1,10 @@
+[project]
+name = "charts"
+version = "0.1.0"
+description = "Helm charts repository"
+requires-python = ">=3.10"
+
+[tool.uv]
+dev-dependencies = [
+    "pre-commit>=3.5.0",
+]
