@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pelican-panel.fullname" . }}-config
+  labels:
+    {{- include "pelican-panel.labels" . | nindent 4 }}
+data:
+  # Application Configuration
+  APP_URL: {{ .Values.pelican.appUrl | quote }}
+  APP_DEBUG: {{ .Values.pelican.appDebug | quote }}
+  APP_ENV: {{ .Values.pelican.appEnvironment | quote }}
+  APP_TIMEZONE: {{ .Values.pelican.appTimezone | quote }}
+  APP_LOCALE: {{ .Values.pelican.appLocale | quote }}
+  
+  # Session Configuration
+  SESSION_DRIVER: {{ .Values.pelican.sessionDriver | quote }}
+  SESSION_LIFETIME: {{ .Values.pelican.sessionLifetime | quote }}
+  SESSION_ENCRYPT: {{ .Values.pelican.sessionEncrypt | quote }}
+  SESSION_PATH: {{ .Values.pelican.sessionPath | quote }}
+  SESSION_DOMAIN: {{ .Values.pelican.sessionDomain | quote }}
+  
+  # Cache Configuration
+  CACHE_DRIVER: {{ .Values.pelican.cacheDriver | quote }}
+  {{- if .Values.redis.enabled }}
+  CACHE_DRIVER: "redis"
+  {{- end }}
+  
+  # Queue Configuration
+  QUEUE_CONNECTION: {{ .Values.pelican.queueConnection | quote }}
+  
+  # Mail Configuration
+  MAIL_DRIVER: {{ .Values.pelican.mailDriver | quote }}
+  MAIL_HOST: {{ .Values.pelican.mailHost | quote }}
+  MAIL_PORT: {{ .Values.pelican.mailPort | quote }}
+  MAIL_USERNAME: {{ .Values.pelican.mailUsername | quote }}
+  MAIL_ENCRYPTION: {{ .Values.pelican.mailEncryption | quote }}
+  MAIL_FROM_ADDRESS: {{ .Values.pelican.mailFromAddress | quote }}
+  MAIL_FROM_NAME: {{ .Values.pelican.mailFromName | quote }}
+  
+  # Filesystem Configuration
+  FILESYSTEM_DISK: {{ .Values.pelican.filesystemDisk | quote }}
+  
+  # Hash Configuration
+  HASH_DRIVER: {{ .Values.pelican.hashDriver | quote }}
+  HASH_BCRYPT_ROUNDS: {{ .Values.pelican.hashBcryptRounds | quote }}
+  
+  # Trusted Proxies
+  TRUSTED_PROXIES: {{ .Values.pelican.trustedProxies | quote }}
+  
+  # Data Directory
+  XDG_DATA_HOME: {{ .Values.persistence.data.mountPath | quote }}

@@ -1,0 +1,47 @@
+{{- if .Values.cnpg.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "pelican-panel.fullname" . }}-cnpg
+  labels:
+    {{- include "pelican-panel.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.cnpg.cluster.instances }}
+  primaryUpdateStrategy: {{ .Values.cnpg.cluster.primaryUpdateStrategy }}
+  
+  postgresql:
+    parameters:
+      {{- toYaml .Values.cnpg.cluster.postgresql.parameters | nindent 6 }}
+  
+  bootstrap:
+    initdb:
+      database: pelican
+      owner: pelican
+      secret:
+        name: {{ include "pelican-panel.fullname" . }}-cnpg-app
+      postInitApplicationSQL:
+        - |
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+          CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+  
+  {{- if .Values.cnpg.cluster.superuserSecret.name }}
+  superuserSecret:
+    name: {{ .Values.cnpg.cluster.superuserSecret.name }}
+  {{- end }}
+  
+  storage:
+    size: {{ .Values.cnpg.cluster.storage.size }}
+    {{- if .Values.cnpg.cluster.storage.storageClass }}
+    storageClass: {{ .Values.cnpg.cluster.storage.storageClass }}
+    {{- end }}
+  
+  {{- if .Values.cnpg.cluster.resources }}
+  resources:
+    {{- toYaml .Values.cnpg.cluster.resources | nindent 4 }}
+  {{- end }}
+  
+  {{- if .Values.cnpg.cluster.monitoring.enabled }}
+  monitoring:
+    enabled: true
+  {{- end }}
+{{- end }}
