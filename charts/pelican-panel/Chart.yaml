@@ -2,7 +2,7 @@ apiVersion: v2
 name: pelican-panel
 description: A Helm chart for Pelican Panel - Game server management panel
 type: application
-version: 0.1.1
+version: 0.2.0
 appVersion: "latest"
 keywords:
   - pelican
@@ -15,9 +15,3 @@ sources:
 maintainers:
   - name: Your Name
     email: your-email@example.com
-dependencies:
-  - name: cloudnative-pg
-    version: "0.20.0"
-    repository: https://cloudnative-pg.github.io/charts
-    condition: cnpg.enabled
-    alias: cnpg

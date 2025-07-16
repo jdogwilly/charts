@@ -1,6 +1,6 @@
 # pelican-panel
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A Helm chart for Pelican Panel - Game server management panel
 
@@ -15,12 +15,6 @@ A Helm chart for Pelican Panel - Game server management panel
 ## Source Code
 
 * <https://github.com/pelican-dev/panel>
-
-## Requirements
-
-| Repository | Name | Version |
-|------------|------|---------|
-| https://cloudnative-pg.github.io/charts | cnpg(cloudnative-pg) | 0.20.0 |
 
 ## Values
 
