@@ -1,6 +1,6 @@
 # pelican-panel
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A Helm chart for Pelican Panel - Game server management panel
 
@@ -124,7 +124,7 @@ A Helm chart for Pelican Panel - Game server management panel
 | persistence.size | string | `"10Gi"` |  |
 | persistence.storageClass | string | `""` |  |
 | podAnnotations | object | `{}` |  |
-| podSecurityContext.fsGroup | int | `1000` |  |
+| podSecurityContext | object | `{}` |  |
 | readinessProbe.enabled | bool | `true` |  |
 | readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.initialDelaySeconds | int | `5` |  |
@@ -137,14 +137,9 @@ A Helm chart for Pelican Panel - Game server management panel
 | redis.port | int | `6379` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
-| securityContext.capabilities.drop[0] | string | `"ALL"` |  |
-| securityContext.readOnlyRootFilesystem | bool | `false` |  |
-| securityContext.runAsGroup | int | `1000` |  |
-| securityContext.runAsNonRoot | bool | `true` |  |
-| securityContext.runAsUser | int | `1000` |  |
+| securityContext | object | `{}` |  |
 | service.annotations | object | `{}` |  |
 | service.port | int | `80` |  |
-| service.targetPort | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |

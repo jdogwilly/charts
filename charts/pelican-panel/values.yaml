@@ -20,22 +20,23 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  fsGroup: 1000
+podSecurityContext: {}
+  # fsGroup: 1000
 
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
-  capabilities:
-    drop:
-    - ALL
-  readOnlyRootFilesystem: false
+securityContext: {}
+  # The Pelican Panel container needs to run as www-data user
+  # and requires specific permissions for its entrypoint script
+  # runAsNonRoot: true
+  # runAsUser: 1000
+  # runAsGroup: 1000
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: false
 
 service:
   type: ClusterIP
   port: 80
-  targetPort: 80
   annotations: {}
 
 ingress:

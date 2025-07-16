@@ -39,9 +39,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/ash"]
+          args: ["docker/entrypoint.sh", "supervisord", "-n", "-c", "/etc/supervisord.conf"]
           ports:
             - name: http
-              containerPort: {{ .Values.service.targetPort }}
+              containerPort: 80
               protocol: TCP
           envFrom:
             - configMapRef:
