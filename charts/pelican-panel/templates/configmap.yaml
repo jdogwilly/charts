@@ -49,3 +49,7 @@ data:
 
   # Data Directory
   XDG_DATA_HOME: {{ .Values.persistence.data.mountPath | quote }}
+
+  # Caddy Configuration
+  CADDY_HTTP_PORT: "8080"
+  CADDY_HTTPS_PORT: "8443"
