@@ -29,10 +29,51 @@ spec:
       serviceAccountName: {{ include "pelican-panel.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- with .Values.initContainers }}
       initContainers:
+        - name: create-directories
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Creating required directories..."
+              # Create directories for supervisord runtime
+              mkdir -p /var/run/supervisord
+              chown www-data:www-data /var/run/supervisord
+              chmod 755 /var/run/supervisord
+
+              # Create directories in data volume if enabled
+              {{- if .Values.persistence.data.enabled }}
+              mkdir -p /pelican-data/database
+              mkdir -p /pelican-data/storage/avatars
+              mkdir -p /pelican-data/storage/fonts
+              chown -R www-data:www-data /pelican-data
+              chmod -R 755 /pelican-data
+              {{- end }}
+
+              # Create directories in logs volume if enabled
+              {{- if .Values.persistence.logs.enabled }}
+              mkdir -p /var/www/html/storage/logs/supervisord
+              chown -R www-data:www-data /var/www/html/storage/logs
+              chmod -R 755 /var/www/html/storage/logs
+              {{- end }}
+
+              echo "Directories created successfully"
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            {{- if .Values.persistence.data.enabled }}
+            - name: pelican-data
+              mountPath: {{ .Values.persistence.data.mountPath }}
+            {{- end }}
+            {{- if .Values.persistence.logs.enabled }}
+            - name: pelican-logs
+              mountPath: {{ .Values.persistence.logs.mountPath }}
+            {{- end }}
+        {{- with .Values.initContainers }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
