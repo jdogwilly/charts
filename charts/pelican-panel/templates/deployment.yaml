@@ -189,7 +189,7 @@ spec:
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /login
               port: http
               httpHeaders:
               - name: Accept
@@ -203,7 +203,7 @@ spec:
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /login
               port: http
               httpHeaders:
               - name: Accept
@@ -217,7 +217,7 @@ spec:
           {{- if .Values.startupProbe.enabled }}
           startupProbe:
             httpGet:
-              path: /
+              path: /login
               port: http
               httpHeaders:
               - name: Accept
@@ -231,6 +231,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - name: caddyfile
+              mountPath: /etc/caddy/Caddyfile
+              subPath: Caddyfile
             {{- if .Values.persistence.data.enabled }}
             - name: pelican-data
               mountPath: {{ .Values.persistence.data.mountPath }}
@@ -243,6 +246,9 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
       volumes:
+        - name: caddyfile
+          configMap:
+            name: {{ include "pelican-panel.fullname" . }}-caddyfile
         {{- if .Values.persistence.data.enabled }}
         - name: pelican-data
           persistentVolumeClaim:
