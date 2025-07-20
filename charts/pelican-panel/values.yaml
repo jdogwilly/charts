@@ -151,6 +151,14 @@ persistence:
 cnpg:
   enabled: true
   mode: standalone
+  # Authentication configuration for the application database
+  auth:
+    # Use an existing secret for database credentials
+    existingSecret: ""
+    # Key in the existing secret containing the username (default: username)
+    existingSecretUsernameKey: "username"
+    # Key in the existing secret containing the password (default: password)
+    existingSecretPasswordKey: "password"
   cluster:
     instances: 1
     primaryUpdateStrategy: "unsupervised"

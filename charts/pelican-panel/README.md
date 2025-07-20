@@ -26,6 +26,9 @@ A Helm chart for Pelican Panel - Game server management panel
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
+| cnpg.auth.existingSecret | string | `""` |  |
+| cnpg.auth.existingSecretPasswordKey | string | `"password"` |  |
+| cnpg.auth.existingSecretUsernameKey | string | `"username"` |  |
 | cnpg.cluster.instances | int | `1` |  |
 | cnpg.cluster.monitoring.enabled | bool | `false` |  |
 | cnpg.cluster.postgresql.parameters.checkpoint_completion_target | string | `"0.9"` |  |

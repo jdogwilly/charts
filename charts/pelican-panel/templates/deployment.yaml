@@ -133,12 +133,24 @@ spec:
             - name: DB_DATABASE
               value: "pelican"
             - name: DB_USERNAME
+              {{- if .Values.cnpg.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.cnpg.auth.existingSecret }}
+                  key: {{ .Values.cnpg.auth.existingSecretUsernameKey | default "username" }}
+              {{- else }}
               value: "pelican"
+              {{- end }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
+                  {{- if .Values.cnpg.auth.existingSecret }}
+                  name: {{ .Values.cnpg.auth.existingSecret }}
+                  key: {{ .Values.cnpg.auth.existingSecretPasswordKey | default "password" }}
+                  {{- else }}
                   name: {{ include "pelican-panel.fullname" . }}-cnpg-app
                   key: password
+                  {{- end }}
             {{- else if .Values.externalDatabase.enabled }}
             - name: DB_CONNECTION
               value: {{ .Values.externalDatabase.type | quote }}

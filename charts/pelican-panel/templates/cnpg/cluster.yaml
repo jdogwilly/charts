@@ -18,7 +18,11 @@ spec:
       database: pelican
       owner: pelican
       secret:
+        {{- if .Values.cnpg.auth.existingSecret }}
+        name: {{ .Values.cnpg.auth.existingSecret }}
+        {{- else }}
         name: {{ include "pelican-panel.fullname" . }}-cnpg-app
+        {{- end }}
       postInitApplicationSQL:
         - |
           CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
