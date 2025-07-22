@@ -28,29 +28,12 @@
     kubectl get secret --namespace {{ .Release.Namespace }} {{ include "pelican-panel.fullname" . }}-secret -o jsonpath="{.data.ADMIN_PASSWORD}" | base64 --decode
 
 3. Database Information:
-{{- if .Values.cnpg.enabled }}
-  Database Type: PostgreSQL (CloudNativePG)
-  Database Host: {{ include "pelican-panel.fullname" . }}-cnpg-rw
-  Database Name: pelican
-  Database User: pelican
-  Database Password:
-    kubectl get secret --namespace {{ .Release.Namespace }} {{ include "pelican-panel.fullname" . }}-cnpg-app -o jsonpath="{.data.password}" | base64 --decode
-{{- else if .Values.externalDatabase.enabled }}
-  Database Type: {{ .Values.externalDatabase.type }}
-  Database Host: {{ .Values.externalDatabase.host }}
-  Database Name: {{ .Values.externalDatabase.database }}
-  Database User: {{ .Values.externalDatabase.username }}
-{{- end }}
+  Database Type: SQLite
+  Database Path: /pelican-data/database/database.sqlite
 
 4. Application Key:
   kubectl get secret --namespace {{ .Release.Namespace }} {{ include "pelican-panel.fullname" . }}-secret -o jsonpath="{.data.APP_KEY}" | base64 --decode
 
-{{- if .Values.redis.enabled }}
-
-5. Redis Configuration:
-  Redis Host: {{ .Values.redis.host }}
-  Redis Port: {{ .Values.redis.port }}
-{{- end }}
 
 NOTE: Pelican Panel is now deployed. You may need to run database migrations and perform initial setup.
       To access the container and run artisan commands:

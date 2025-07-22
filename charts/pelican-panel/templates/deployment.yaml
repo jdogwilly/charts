@@ -30,34 +30,6 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        - name: wait-for-db
-          image: busybox:1.36
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
-                echo "Waiting for database at $DB_HOST:$DB_PORT to be ready..."
-                until nc -z -w 2 "$DB_HOST" "$DB_PORT"; do
-                  echo "Database is not ready. Waiting..."
-                  sleep 5
-                done
-                echo "Database is ready!"
-              else
-                echo "No database configured (DB_HOST or DB_PORT not set), skipping wait"
-              fi
-          env:
-            {{- if .Values.cnpg.enabled }}
-            - name: DB_HOST
-              value: {{ include "pelican-panel.fullname" . }}-cnpg-rw
-            - name: DB_PORT
-              value: "5432"
-            {{- else if .Values.externalDatabase.enabled }}
-            - name: DB_HOST
-              value: {{ .Values.externalDatabase.host | quote }}
-            - name: DB_PORT
-              value: {{ .Values.externalDatabase.port | quote }}
-            {{- end }}
         - name: create-directories
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -123,78 +95,10 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           env:
-            {{- if .Values.cnpg.enabled }}
             - name: DB_CONNECTION
-              value: "pgsql"
-            - name: DB_HOST
-              value: {{ include "pelican-panel.fullname" . }}-cnpg-rw
-            - name: DB_PORT
-              value: "5432"
+              value: "sqlite"
             - name: DB_DATABASE
-              value: "pelican"
-            - name: DB_USERNAME
-              {{- if .Values.cnpg.auth.existingSecret }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.cnpg.auth.existingSecret }}
-                  key: {{ .Values.cnpg.auth.existingSecretUsernameKey | default "username" }}
-              {{- else }}
-              value: "pelican"
-              {{- end }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  {{- if .Values.cnpg.auth.existingSecret }}
-                  name: {{ .Values.cnpg.auth.existingSecret }}
-                  key: {{ .Values.cnpg.auth.existingSecretPasswordKey | default "password" }}
-                  {{- else }}
-                  name: {{ include "pelican-panel.fullname" . }}-cnpg-app
-                  key: password
-                  {{- end }}
-            {{- else if .Values.externalDatabase.enabled }}
-            - name: DB_CONNECTION
-              value: {{ .Values.externalDatabase.type | quote }}
-            - name: DB_HOST
-              value: {{ .Values.externalDatabase.host | quote }}
-            - name: DB_PORT
-              value: {{ .Values.externalDatabase.port | quote }}
-            - name: DB_DATABASE
-              value: {{ .Values.externalDatabase.database | quote }}
-            - name: DB_USERNAME
-              value: {{ .Values.externalDatabase.username | quote }}
-            {{- if .Values.externalDatabase.existingSecret }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.externalDatabase.existingSecret }}
-                  key: {{ .Values.externalDatabase.existingSecretPasswordKey | default "password" }}
-            {{- else }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "pelican-panel.fullname" . }}-secret
-                  key: database-password
-            {{- end }}
-            {{- end }}
-            {{- if .Values.redis.enabled }}
-            - name: REDIS_HOST
-              value: {{ .Values.redis.host | quote }}
-            - name: REDIS_PORT
-              value: {{ .Values.redis.port | quote }}
-            {{- if .Values.redis.existingSecret }}
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.redis.existingSecret }}
-                  key: {{ .Values.redis.existingSecretPasswordKey | default "password" }}
-            {{- else if .Values.redis.password }}
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "pelican-panel.fullname" . }}-secret
-                  key: redis-password
-            {{- end }}
-            {{- end }}
+              value: "/pelican-data/database/database.sqlite"
             {{- with .Values.extraEnvVars }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

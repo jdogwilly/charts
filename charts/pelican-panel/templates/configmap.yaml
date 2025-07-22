@@ -22,9 +22,6 @@ data:
 
   # Cache Configuration
   CACHE_DRIVER: {{ .Values.pelican.cacheDriver | quote }}
-  {{- if .Values.redis.enabled }}
-  CACHE_DRIVER: "redis"
-  {{- end }}
 
   # Queue Configuration
   QUEUE_CONNECTION: {{ .Values.pelican.queueConnection | quote }}
@@ -66,6 +63,12 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
   Caddyfile: |
+    {
+      admin off
+      servers {
+        trusted_proxies *
+      }
+    }
     :8080 {
       root * /var/www/html/public
       encode gzip
