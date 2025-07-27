@@ -2,7 +2,7 @@ apiVersion: v2
 name: pelican-panel
 description: A Helm chart for Pelican Panel - Game server management panel
 type: application
-version: 0.5.0
+version: 0.5.1
 appVersion: "latest"
 keywords:
   - pelican
