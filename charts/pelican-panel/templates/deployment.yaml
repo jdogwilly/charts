@@ -95,10 +95,6 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           env:
-            - name: DB_CONNECTION
-              value: "sqlite"
-            - name: DB_DATABASE
-              value: "/pelican-data/database/database.sqlite"
             {{- with .Values.extraEnvVars }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
