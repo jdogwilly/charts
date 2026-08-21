@@ -1,0 +1,19 @@
+apiVersion: v2
+name: komodo
+description: A Helm chart for Komodo Core - build, deploy and monitor servers, containers and stacks
+type: application
+version: 0.1.0
+appVersion: "2.3.2"
+keywords:
+  - komodo
+  - docker
+  - deployment
+  - gitops
+  - monitoring
+home: https://komo.do
+sources:
+  - https://github.com/moghtech/komodo
+  - https://github.com/jdogwilly/charts
+maintainers:
+  - name: jdogwilly
+    email: jacob@brookins.email

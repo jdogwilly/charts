@@ -1,0 +1,348 @@
+# Default values for komodo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+#
+# This chart deploys Komodo Core ONLY. It does not ship a database.
+# Komodo Core requires an external MongoDB compatible database (MongoDB,
+# FerretDB or a Percona `PerconaServerMongoDB` cluster). Point the chart at it
+# with `database.address` + `database.existingSecret`.
+
+# -- Number of Komodo Core replicas. Core is NOT HA-safe: the `/config/keys`
+# keypair lives on a single ReadWriteOnce PVC and two Cores sharing one
+# database will double up on polling/alerting. Keep this at 1.
+replicaCount: 1
+
+# -- Deployment update strategy. Defaults to `Recreate` because the persistent
+# volumes default to ReadWriteOnce, which would deadlock a RollingUpdate.
+strategy:
+  type: Recreate
+
+image:
+  # -- Komodo Core image repository
+  repository: ghcr.io/moghtech/komodo-core
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag. Defaults to the chart `appVersion` when empty.
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+# -- Override the fully qualified app name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount for the Komodo Core pod
+  create: true
+  # -- Annotations to add to the ServiceAccount
+  annotations: {}
+  # -- ServiceAccount name. Generated from the fullname template when empty.
+  name: ""
+
+# -- Extra annotations for the Komodo Core pod
+podAnnotations: {}
+
+# -- Extra labels for the Komodo Core pod
+podLabels: {}
+
+# -- Pod level security context
+podSecurityContext: {}
+  # fsGroup: 1000
+
+# -- Container level security context. Note: the image entrypoint runs
+# `update-ca-certificates`, so `readOnlyRootFilesystem: true` and running as a
+# non-root user require additional work (see README).
+securityContext: {}
+  # runAsNonRoot: true
+  # runAsUser: 1000
+  # runAsGroup: 1000
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: false
+
+# -- PriorityClass to schedule the pod with
+priorityClassName: ""
+
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port. Komodo Core serves the UI, REST API and the Periphery
+  # WebSocket on this single port.
+  port: 9120
+  # -- Service annotations
+  annotations: {}
+
+# -- Map of named Ingresses, all pointing at the same Service. This lets you
+# expose Komodo on several ingress controllers at once (for example a LAN
+# Traefik ingress plus a Tailscale operator ingress). One Ingress object is
+# rendered per enabled entry, named `<fullname>-<key>`.
+# Each entry supports either normal `hosts`/`paths` rules or the Tailscale
+# operator style `defaultBackend: true` + `tls[].hosts` (no rules).
+# NOTE: Periphery agents connect to Core over a long lived bi-directional
+# WebSocket. Make sure your ingress controller does not buffer responses and
+# uses a generous read/idle timeout, otherwise agents will flap.
+ingresses:
+  traefik:
+    # -- Enable the Traefik (LAN) Ingress
+    enabled: false
+    # -- IngressClass name
+    className: traefik
+    # -- Ingress annotations
+    annotations: {}
+      # traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    # -- Host rules
+    hosts:
+      - host: komodo.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    # -- TLS configuration
+    tls: []
+      # - secretName: komodo-tls
+      #   hosts:
+      #     - komodo.example.com
+  tailscale:
+    # -- Enable the Tailscale operator Ingress
+    enabled: false
+    # -- IngressClass name
+    className: tailscale
+    # -- Ingress annotations
+    annotations: {}
+    # -- Tailscale operator style: render a `defaultBackend` instead of host
+    # rules. The MagicDNS name comes from `tls[0].hosts[0]`.
+    defaultBackend: true
+    # -- TLS configuration. For the Tailscale operator `secretName` is omitted
+    # and `hosts[0]` becomes the tailnet hostname.
+    tls: []
+      # - hosts:
+      #     - komodo
+
+# -- Resource requests and limits
+resources: {}
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 250m
+  #   memory: 512Mi
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# Komodo Core application configuration.
+# Every field maps to a `KOMODO_*` environment variable documented at
+# https://github.com/moghtech/komodo/blob/main/config/core.config.toml
+# Environment variables always override the mounted config file.
+komodo:
+  # -- `KOMODO_HOST`. Public URL Komodo is reached at, used for OAuth
+  # redirects and webhook URL suggestions. Required for a usable install.
+  host: ""
+  # -- `KOMODO_TITLE`. Browser tab title.
+  title: "Komodo"
+  # -- `KOMODO_LOCAL_AUTH`. Allow username/password login.
+  localAuth: true
+  # -- `KOMODO_DISABLE_USER_REGISTRATION`. Block new signups after the first
+  # user has been created.
+  disableUserRegistration: false
+  # -- `KOMODO_INIT_ADMIN_USERNAME`. Creates the first admin user on first
+  # startup. Its password comes from `komodo.secrets` (see below).
+  initAdminUsername: ""
+  # -- `KOMODO_MONITORING_INTERVAL`. How often servers are polled for stats.
+  # Options: 1-sec, 5-sec, 15-sec, 1-min, 5-min, 15-min
+  monitoringInterval: "15-sec"
+  # -- `KOMODO_RESOURCE_POLL_INTERVAL`. How often resources are polled for
+  # updates / automated actions. Options: 5-min, 15-min, 1-hr, 2-hr, 6-hr,
+  # 12-hr, 1-day
+  resourcePollInterval: "1-hr"
+  # -- `KOMODO_UI_WRITE_DISABLED`. Make the UI read-only (recommended when all
+  # resources are managed through ResourceSyncs).
+  uiWriteDisabled: false
+  # -- `TZ`. Timezone used for schedules.
+  timezone: "Etc/UTC"
+
+  # Sensitive Komodo settings. The documented path is `existingSecret`; the
+  # plaintext fields are only a convenience for local testing and end up in a
+  # chart managed Secret.
+  secrets:
+    # -- Name of an existing Secret holding the Komodo secrets. Referenced keys
+    # are looked up with `optional: true`, so the Secret only needs to contain
+    # the keys you actually use.
+    existingSecret: ""
+    # -- Key in `existingSecret` holding `KOMODO_JWT_SECRET`
+    jwtSecretKey: "KOMODO_JWT_SECRET"
+    # -- Key in `existingSecret` holding `KOMODO_WEBHOOK_SECRET`
+    webhookSecretKey: "KOMODO_WEBHOOK_SECRET"
+    # -- Key in `existingSecret` holding `KOMODO_INIT_ADMIN_PASSWORD`
+    initAdminPasswordKey: "KOMODO_INIT_ADMIN_PASSWORD"
+    # -- Plaintext `KOMODO_JWT_SECRET` (dev only, prefer `existingSecret`).
+    # If unset, Komodo generates a new one on every restart and all sessions
+    # are invalidated.
+    jwtSecret: ""
+    # -- Plaintext `KOMODO_WEBHOOK_SECRET` (dev only, prefer `existingSecret`)
+    webhookSecret: ""
+    # -- Plaintext `KOMODO_INIT_ADMIN_PASSWORD` (dev only, prefer
+    # `existingSecret`)
+    initAdminPassword: ""
+
+# External MongoDB compatible database. No database is deployed by this chart.
+database:
+  # -- `KOMODO_DATABASE_ADDRESS`, in `host:port` form (Mongo wire protocol).
+  address: "mongodb:27017"
+  # -- Name of an existing Secret holding the database credentials, e.g. the
+  # Secret generated by a Percona `PerconaServerMongoDB` cluster.
+  existingSecret: ""
+  # -- Key in `database.existingSecret` holding the username
+  usernameKey: "username"
+  # -- Key in `database.existingSecret` holding the password
+  passwordKey: "password"
+  # -- Plaintext username (dev only, prefer `existingSecret`)
+  username: ""
+  # -- Plaintext password (dev only, prefer `existingSecret`)
+  password: ""
+
+# Optional `core.config.toml` mounted read-only at `/config/config.toml`.
+# This is the ONLY way to supply a `[secrets]` block, `[[git_provider]]` or
+# `[[image_registry]]` entries - those cannot be set through the environment.
+coreConfig:
+  # -- Name of an existing Secret containing the Komodo Core config file.
+  # Leave empty to run with the image default config.
+  existingSecret: ""
+  # -- Key inside `coreConfig.existingSecret` holding the config file
+  key: "config.toml"
+
+# Persistent volumes. Each entry can be disabled, pointed at an
+# `existingClaim`, or sized/classed individually.
+persistence:
+  # `/config/keys` holds the Core Noise keypair used to authenticate Periphery
+  # agents. Losing it breaks every agent connection, so it is enabled by
+  # default.
+  keys:
+    # -- Persist `/config/keys` (Core <-> Periphery keypair). Keep enabled.
+    enabled: true
+    # -- StorageClass. Empty uses the cluster default.
+    storageClass: ""
+    # -- Volume size
+    size: 1Gi
+    # -- Access mode
+    accessMode: ReadWriteOnce
+    # -- Use an existing PVC instead of creating one
+    existingClaim: ""
+  syncs:
+    # -- Persist `/syncs` (ResourceSync files written by Core)
+    enabled: false
+    # -- StorageClass. Empty uses the cluster default.
+    storageClass: ""
+    # -- Volume size
+    size: 1Gi
+    # -- Access mode
+    accessMode: ReadWriteOnce
+    # -- Use an existing PVC instead of creating one
+    existingClaim: ""
+  backups:
+    # -- Persist `/backups` (dated database backups produced by the
+    # "Backup Core Database" procedure)
+    enabled: false
+    # -- StorageClass. Empty uses the cluster default.
+    storageClass: ""
+    # -- Volume size
+    size: 10Gi
+    # -- Access mode
+    accessMode: ReadWriteOnce
+    # -- Use an existing PVC instead of creating one
+    existingClaim: ""
+
+# -- Additional environment variables for the Komodo Core container
+extraEnv: []
+# - name: KOMODO_FIRST_SERVER_NAME
+#   value: "office"
+# - name: KOMODO_PERIPHERY_PUBLIC_KEY
+#   value: "file:/config/keys/periphery.pub"
+
+# -- Additional `envFrom` sources (Secrets / ConfigMaps)
+extraEnvFrom: []
+# - secretRef:
+#     name: komodo-oidc
+
+# -- Additional volumes, e.g. a custom root CA to trust
+extraVolumes: []
+# - name: root-ca
+#   secret:
+#     secretName: internal-root-ca
+
+# -- Additional volume mounts. Certificates placed in
+# `/usr/local/share/ca-certificates` are installed by the image entrypoint.
+extraVolumeMounts: []
+# - name: root-ca
+#   mountPath: /usr/local/share/ca-certificates/root_ca.crt
+#   subPath: root_ca.crt
+#   readOnly: true
+
+# -- Extra init containers
+initContainers: []
+
+# Probes. Komodo Core has no dedicated health endpoint, but exposes an
+# unauthenticated `GET /version` on port 9120. Set `type: tcp` to fall back to
+# a plain TCP socket check.
+livenessProbe:
+  # -- Enable the liveness probe
+  enabled: true
+  # -- Probe type: `http` or `tcp`
+  type: http
+  # -- HTTP path used when `type: http`
+  path: /version
+  # -- Initial delay
+  initialDelaySeconds: 30
+  # -- Period
+  periodSeconds: 10
+  # -- Timeout
+  timeoutSeconds: 5
+  # -- Failure threshold
+  failureThreshold: 3
+  # -- Success threshold
+  successThreshold: 1
+
+readinessProbe:
+  # -- Enable the readiness probe
+  enabled: true
+  # -- Probe type: `http` or `tcp`
+  type: http
+  # -- HTTP path used when `type: http`
+  path: /version
+  # -- Initial delay
+  initialDelaySeconds: 5
+  # -- Period
+  periodSeconds: 10
+  # -- Timeout
+  timeoutSeconds: 5
+  # -- Failure threshold
+  failureThreshold: 3
+  # -- Success threshold
+  successThreshold: 1
+
+startupProbe:
+  # -- Enable the startup probe
+  enabled: true
+  # -- Probe type: `http` or `tcp`
+  type: http
+  # -- HTTP path used when `type: http`
+  path: /version
+  # -- Initial delay
+  initialDelaySeconds: 0
+  # -- Period
+  periodSeconds: 5
+  # -- Timeout
+  timeoutSeconds: 3
+  # -- Failure threshold
+  failureThreshold: 30
+  # -- Success threshold
+  successThreshold: 1

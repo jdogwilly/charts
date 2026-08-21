@@ -1,0 +1,26 @@
+{{- $fullName := include "komodo.fullname" . -}}
+{{- $labels := include "komodo.labels" . -}}
+{{- range $name, $config := .Values.persistence }}
+{{- if and $config.enabled (not $config.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-%s" $fullName $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  accessModes:
+    - {{ $config.accessMode }}
+  resources:
+    requests:
+      storage: {{ $config.size }}
+  {{- if $config.storageClass }}
+  {{- if (eq "-" $config.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ $config.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

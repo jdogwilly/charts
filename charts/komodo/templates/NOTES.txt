@@ -1,0 +1,59 @@
+Komodo Core {{ .Chart.AppVersion }} has been deployed.
+
+1. Get the application URL:
+{{- $ingressFound := false }}
+{{- range $key, $ingress := .Values.ingresses }}
+{{- if $ingress.enabled }}
+{{- $ingressFound = true }}
+  [{{ $key }}]
+  {{- range $ingress.hosts }}
+  {{- $host := .host }}
+  {{- range .paths }}
+  https://{{ $host }}{{ .path }}
+  {{- end }}
+  {{- end }}
+  {{- if $ingress.defaultBackend }}
+  {{- range $ingress.tls }}
+  {{- range .hosts }}
+  https://{{ . }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- if not $ingressFound }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "komodo.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 9120:{{ .Values.service.port }}
+  echo "Visit http://127.0.0.1:9120 to use Komodo"
+{{- end }}
+
+2. Database:
+  This chart does NOT deploy a database. Komodo Core is configured to use the
+  external MongoDB compatible database at: {{ .Values.database.address }}
+  {{- if .Values.database.existingSecret }}
+  Credentials are read from the Secret "{{ .Values.database.existingSecret }}"
+  (keys: {{ .Values.database.usernameKey }} / {{ .Values.database.passwordKey }}).
+  {{- else if .Values.database.username }}
+  Credentials are read from the chart managed Secret "{{ include "komodo.secretName" . }}".
+  WARNING: inline credentials are for development only, prefer
+           `database.existingSecret`.
+  {{- else }}
+  WARNING: no database credentials configured. Set `database.existingSecret`.
+  {{- end }}
+
+3. Periphery agents:
+  Core generates its keypair at /config/keys on first start.
+  {{- if .Values.persistence.keys.enabled }}
+  It is persisted on PVC "{{ include "komodo.pvcName" (dict "root" $ "name" "keys" "config" .Values.persistence.keys) }}".
+  {{- else }}
+  WARNING: persistence.keys is DISABLED. The keypair will be lost on restart
+           and every Periphery agent will fail to authenticate.
+  {{- end }}
+  Fetch the public key to hand to your Periphery agents:
+    kubectl exec -n {{ .Release.Namespace }} deployment/{{ include "komodo.fullname" . }} -- cat /config/keys/core.pub
+
+{{- if not .Values.komodo.host }}
+
+4. WARNING: `komodo.host` is not set. OAuth/OIDC redirects and webhook URL
+   suggestions will be wrong. Set it to the public URL of this install.
+{{- end }}
